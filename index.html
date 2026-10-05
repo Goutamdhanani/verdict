@@ -1,0 +1,1065 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0a0f">
+  <title>THE COUNCIL V2.0 — Persistent Multi-Agent Coding Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f; --bg2: #111118; --bg3: #1a1a25; --bg4: #222233;
+      --text: #e8e8f0; --text2: #9999bb; --text3: #666688;
+      --neon-green: #00ff88; --neon-red: #ff2244; --neon-purple: #8844ff;
+      --neon-orange: #ff6622; --neon-blue: #2288ff; --neon-pink: #ff44aa;
+      --neon-yellow: #ffdd00; --neon-cyan: #00ddff;
+      --glass: rgba(255,255,255,0.03); --glass-border: rgba(255,255,255,0.08);
+      --glass-hover: rgba(255,255,255,0.06);
+      --health-green: #22cc66; --health-yellow: #ddaa00; --health-red: #ff3344;
+      --font-display: 'Orbitron', sans-serif; --font-body: 'Inter', sans-serif; --font-mono: 'JetBrains Mono', monospace;
+      --transition: cubic-bezier(0.19, 1, 0.22, 1);
+    }
+    ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) {
+      animation-duration: 0.25s; animation-timing-function: var(--transition);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); overflow-x: hidden; }
+    button, input, textarea, select { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 3px; }
+
+    /* ANIMATED BACKGROUND */
+    .arena-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .arena-bg::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse at 20% 50%, rgba(136,68,255,0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(0,255,136,0.05) 0%, transparent 50%), radial-gradient(ellipse at 50% 80%, rgba(255,34,68,0.06) 0%, transparent 50%); animation: bgPulse 8s ease-in-out infinite alternate; }
+    .arena-bg .grid { position:absolute; inset:0; background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 40px 40px; animation: gridDrift 20s linear infinite; }
+    @keyframes bgPulse { 0%{opacity:1} 100%{opacity:0.6;filter:hue-rotate(30deg)} }
+    @keyframes gridDrift { 0%{transform:translate(0,0)} 100%{transform:translate(40px,40px)} }
+
+    /* Particles */
+    .particles { position:fixed; inset:0; z-index:0; pointer-events:none; }
+    .particle { position:absolute; width:2px; height:2px; border-radius:50%; opacity:0; animation: particleFloat 6s ease-in-out infinite; }
+    @keyframes particleFloat { 0%{opacity:0;transform:translateY(100vh) scale(0)} 20%{opacity:0.8} 80%{opacity:0.6} 100%{opacity:0;transform:translateY(-20vh) scale(1.5)} }
+
+    /* LAYOUT */
+    .shell { position: relative; z-index: 1; max-width: 1650px; margin: auto; padding: 0 28px 80px; }
+    .top { height: 72px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }
+    .brand { display: flex; gap: 14px; align-items: center; }
+    .brand-icon { width: 42px; height: 42px; border: 2px solid var(--neon-cyan); border-radius: 50%; display: grid; place-items: center; font: 800 18px var(--font-display); color: var(--neon-cyan); box-shadow: 0 0 20px rgba(0,221,255,0.3); animation: iconPulse 3s ease-in-out infinite; }
+    @keyframes iconPulse { 0%,100%{box-shadow:0 0 15px rgba(0,221,255,0.3)} 50%{box-shadow:0 0 25px rgba(0,221,255,0.6)} }
+    .brand-text { font: 800 20px var(--font-display); letter-spacing: 0.15em; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .brand-sub { font: 500 10px var(--font-mono); color: var(--neon-purple); letter-spacing: 0.15em; text-transform: uppercase; margin-left: 14px; padding-left: 14px; border-left: 1px solid var(--glass-border); }
+    .topright { display: flex; align-items: center; gap: 16px; font: 11px var(--font-mono); color: var(--text3); }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--neon-orange); display: inline-block; margin-right: 8px; animation: dotPulse 2s ease-in-out infinite; }
+    .live-dot.ready { background: var(--neon-green); }
+
+    /* HERO */
+    .hero { padding: 40px 0 28px; text-align: center; }
+    .hero-eyebrow { font: 700 11px var(--font-mono); color: var(--neon-cyan); letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 12px; }
+    .hero h1 { font: 800 clamp(28px,4vw,48px)/1.1 var(--font-display); letter-spacing: -0.01em; margin-bottom: 14px; }
+    .hero h1 .g { background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero h1 .r { background: linear-gradient(135deg, var(--neon-red), var(--neon-orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { max-width: 850px; margin: 0 auto; color: var(--text2); font-size: 14px; line-height: 1.7; }
+
+    /* MAIN GRID */
+    .layout { display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start; margin-top: 16px; }
+
+    /* GLASS PANELS */
+    .glass { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 14px; backdrop-filter: blur(20px); }
+    .glass:hover { border-color: rgba(255,255,255,0.12); }
+
+    /* SETUP PANEL */
+    .setup { padding: 24px; position: sticky; top: 16px; }
+    .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .section-head h2 { font: 700 13px var(--font-display); letter-spacing: 0.05em; color: var(--neon-green); }
+    .label { display: flex; justify-content: space-between; align-items: baseline; font: 600 10px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2); margin: 14px 0 6px; }
+    .field { width: 100%; border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(0,0,0,0.3); padding: 12px 14px; color: var(--text); font: 13px/1.6 var(--font-body); outline: none; transition: all 0.3s; }
+    .field:focus { border-color: var(--neon-cyan); box-shadow: 0 0 0 3px rgba(0,221,255,0.1); }
+    textarea.field { resize: vertical; min-height: 90px; }
+    select.field { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239999bb'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
+
+    /* Environment Grid */
+    .env-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; }
+    .env-card { border: 1px solid var(--glass-border); border-radius: 8px; padding: 8px; text-align: center; cursor: pointer; transition: all 0.2s; background: rgba(0,0,0,0.2); }
+    .env-card:hover { border-color: var(--neon-purple); background: rgba(136,68,255,0.05); }
+    .env-card.active { border-color: var(--neon-purple); background: rgba(136,68,255,0.12); box-shadow: 0 0 15px rgba(136,68,255,0.25); }
+    .env-card .env-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+    .env-card .env-name { font: 600 9px var(--font-mono); color: var(--text2); }
+    .env-card .env-threat { font: 700 8px var(--font-mono); color: var(--neon-red); margin-top: 2px; }
+
+    /* Model list */
+    .model-list { border: 1px solid var(--glass-border); border-radius: 8px; max-height: 160px; overflow: auto; background: rgba(0,0,0,0.2); }
+    .model-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 11px; }
+    .model-row:last-child { border: 0; }
+    .model-row input { accent-color: var(--neon-cyan); }
+    .model-row .mid { font: 11px var(--font-mono); color: var(--text); }
+    .model-row .mtag { margin-left: auto; font: 9px var(--font-mono); color: var(--text3); }
+
+    /* Run Button */
+    .run-btn { width: 100%; border: none; border-radius: 10px; padding: 16px; display: flex; align-items: center; justify-content: center; gap: 12px; font: 700 13px var(--font-display); letter-spacing: 0.08em; color: #000; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-green)); transition: all 0.3s; margin-top: 16px; cursor: pointer; }
+    .run-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,221,255,0.3); }
+    .run-btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
+
+    /* ARENA SECTION */
+    .empty-arena { height: 550px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; border: 1px dashed var(--glass-border); border-radius: 14px; }
+    .arena-sigil { width: 110px; height: 110px; border: 2px solid var(--neon-cyan); border-radius: 50%; display: grid; place-items: center; margin-bottom: 24px; animation: sigilSpin 12s linear infinite; }
+    @keyframes sigilSpin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+    .arena-sigil .inner { font: 800 24px var(--font-display); color: var(--neon-cyan); text-shadow: 0 0 20px rgba(0,221,255,0.5); }
+
+    /* Loading / Live Feed */
+    .loading { display: none; min-height: 500px; padding: 24px; flex-direction: column; }
+    .agent-gallery { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+    .agent-card { border: 1px solid var(--glass-border); border-radius: 10px; padding: 10px; background: var(--glass); min-width: 130px; flex: 1; transition: all 0.3s; position: relative; }
+    .agent-card .avatar { font-size: 24px; margin-bottom: 4px; display: block; }
+    .agent-card .codename { font: 700 11px var(--font-display); color: var(--agent-color, var(--text)); }
+
+    /* Live trace items */
+    .live-feed { display: flex; flex-direction: column; gap: 8px; max-height: 480px; overflow: auto; border-top: 1px solid var(--glass-border); padding-top: 14px; margin-top: 12px; }
+    .live-item { padding: 12px; border: 1px solid var(--glass-border); border-radius: 8px; background: var(--glass); }
+    .live-item.combat-event { border-left: 3px solid var(--neon-red); background: rgba(255,34,68,0.03); }
+    .live-item.execution-event { border-left: 3px solid var(--neon-cyan); background: rgba(0,221,255,0.03); }
+    .live-item.ai-request-event { border-left: 3px solid var(--neon-purple); background: rgba(136,68,255,0.06); }
+    .live-item.ai-response-event { border-left: 3px solid var(--neon-green); background: rgba(0,255,136,0.07); }
+
+    /* RESULTS */
+    .results { display: none; }
+    .ruling { padding: 24px; background: linear-gradient(135deg, rgba(0,221,255,0.08), rgba(0,255,136,0.08)); border: 1px solid rgba(0,221,255,0.2); border-radius: 12px; margin: 16px 0; }
+    .ruling h2 { font: 700 20px var(--font-display); color: var(--text); margin: 10px 0 8px; }
+
+    /* Tabs */
+    .tab-bar { display: flex; gap: 2px; border-bottom: 1px solid var(--glass-border); overflow: auto; margin: 18px 0 0; }
+    .tab { white-space: nowrap; border: 0; background: none; padding: 12px 16px; color: var(--text3); font: 11px var(--font-mono); border-bottom: 2px solid transparent; cursor: pointer; }
+    .tab.active { color: var(--neon-cyan); border-color: var(--neon-cyan); font-weight: 700; }
+    .tab-pane { padding: 18px 0; }
+    .score-table { width: 100%; border-collapse: collapse; }
+    .score-table th { font: 600 9px var(--font-mono); color: var(--text3); padding: 8px; border-bottom: 1px solid var(--glass-border); text-align: left; }
+    .score-table td { font: 11px var(--font-mono); padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .code-block { background: rgba(0,0,0,0.5); padding: 12px; border-radius: 8px; font: 11px/1.5 var(--font-mono); border: 1px solid var(--glass-border); color: var(--neon-green); overflow-x: auto; white-space: pre-wrap; margin-top: 6px; }
+
+    /* ROADMAP MODAL & BADGE */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(5,5,10,0.85); backdrop-filter: blur(12px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-backdrop.open { display: flex; }
+    .modal-dialog { width: 100%; max-width: 1120px; height: 88vh; background: #0d0d16; border: 1px solid var(--neon-cyan); border-radius: 14px; box-shadow: 0 0 50px rgba(0,221,255,0.25); display: flex; flex-direction: column; overflow: hidden; }
+    .modal-head { padding: 16px 24px; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; background: rgba(0,221,255,0.04); }
+    .modal-head h2 { font: 700 15px var(--font-display); letter-spacing: 0.08em; color: var(--neon-cyan); display: flex; align-items: center; gap: 10px; }
+    .modal-close { background: none; border: 1px solid var(--glass-border); color: var(--text2); border-radius: 6px; padding: 6px 12px; font: 700 12px var(--font-mono); cursor: pointer; transition: all 0.2s; }
+    .modal-close:hover { border-color: var(--neon-red); color: var(--neon-red); }
+    .modal-tools { padding: 12px 24px; border-bottom: 1px solid var(--glass-border); display: flex; gap: 12px; flex-wrap: wrap; background: rgba(0,0,0,0.3); align-items: center; }
+    .modal-search { flex: 1; min-width: 220px; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.5); color: var(--text); font: 12px var(--font-mono); outline: none; }
+    .modal-search:focus { border-color: var(--neon-cyan); box-shadow: 0 0 10px rgba(0,221,255,0.2); }
+    .pills-scroll { display: flex; gap: 6px; overflow-x: auto; max-width: 100%; padding-bottom: 2px; }
+    .pill-btn { white-space: nowrap; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 4px; padding: 5px 9px; font: 10px var(--font-mono); color: var(--text2); cursor: pointer; transition: all 0.2s; }
+    .pill-btn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); background: rgba(0,221,255,0.08); }
+    .modal-body { padding: 24px 30px; overflow-y: auto; flex: 1; font: 13px/1.8 var(--font-body); color: var(--text); }
+    .modal-body h1, .modal-body h2, .modal-body h3 { font-family: var(--font-display); margin: 24px 0 10px; color: var(--neon-cyan); }
+    .modal-body h1 { font-size: 18px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; }
+    .modal-body h2 { font-size: 15px; color: var(--neon-green); }
+    .modal-body pre { background: rgba(0,0,0,0.6); border: 1px solid var(--glass-border); border-radius: 8px; padding: 14px; font: 11px/1.55 var(--font-mono); color: var(--neon-green); overflow-x: auto; margin: 12px 0; }
+    .modal-body code { font-family: var(--font-mono); background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; color: var(--neon-yellow); }
+    .modal-body blockquote { border-left: 3px solid var(--neon-purple); padding-left: 14px; color: var(--text2); margin: 12px 0; }
+    .modal-body ul, .modal-body ol { padding-left: 24px; margin: 8px 0; }
+    .modal-body hr { border: 0; border-top: 1px solid var(--glass-border); margin: 24px 0; }
+  </style>
+</head>
+<body>
+
+<div class="arena-bg"><div class="grid"></div></div>
+<div class="particles" id="particles"></div>
+
+<div class="shell">
+  <header class="top">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div class="brand-text">THE COUNCIL V2.0</div>
+      <div class="brand-sub">PERSISTENT MULTI-AGENT CODING INTELLIGENCE</div>
+    </div>
+    <div class="topright">
+      <span><span class="live-dot ready" id="healthDot"></span><span id="health">CONNECTING...</span></span>
+      <span>|</span>
+      <span>16 SPECIALIZED ROLES</span>
+      <span>|</span>
+      <span>SANDBOX ACTIVE</span>
+      <span>|</span>
+      <button id="openRoadmapHeaderBtn" style="background:rgba(0,221,255,0.08);border:1px solid var(--neon-cyan);color:var(--neon-cyan);padding:5px 12px;border-radius:6px;font:700 11px var(--font-mono);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s">📜 121-SECTION ROADMAP</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-eyebrow">ITERATIVE ADVERSARIAL EDITION · COUNCIL ROADMAP V2.0</div>
+    <h1>PERSISTENT <span class="g">ORCHESTRATION</span> & <span class="r">ADVERSARIAL CONVERGENCE</span></h1>
+    <p>Code quality derived from specialization, blind candidate pools, execution sandbox verification, iterative repair loops, and Red-Team "Kill the Winner" stress testing.</p>
+  </section>
+
+  <main class="layout">
+    <!-- SETUP PANEL -->
+    <aside class="setup glass">
+      <div class="section-head">
+        <h2>⚡ COUNCIL CONFIGURATION</h2>
+        <button id="roadmapBadgeBtn" style="background:none;border:none;color:var(--neon-cyan);font:700 10px var(--font-mono);cursor:pointer;text-decoration:underline;letter-spacing:0.05em">ROADMAP V2.0 (121 SECTIONS) ↗</button>
+      </div>
+
+      <!-- PROVIDER & REAL AI API CREDENTIALS CONFIG -->
+      <div style="background:rgba(0,0,0,0.35);border:1px solid var(--glass-border);border-radius:10px;padding:12px;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font:700 10px var(--font-mono);color:var(--neon-green);text-transform:uppercase;letter-spacing:0.06em">🔑 Provider & Real AI API</span>
+          <span id="keyStatusBadge" style="font:9px var(--font-mono);padding:2px 6px;border-radius:4px;background:rgba(255,34,68,0.2);color:var(--neon-red);border:1px solid rgba(255,34,68,0.4)">KEY REQUIRED</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+          <div>
+            <div style="font:9px var(--font-mono);color:var(--text3);margin-bottom:3px">AI PROVIDER</div>
+            <select id="providerSelect" class="field" style="padding:6px 8px;font-size:11px">
+              <option value="groq">⚡ Groq (Fast & Free Tier)</option>
+              <option value="openai">🧠 OpenAI (Official API)</option>
+              <option value="openrouter">🌐 OpenRouter (Aggregator)</option>
+              <option value="deepseek">🐋 DeepSeek (Official API)</option>
+              <option value="gemini">💎 Google Gemini (OpenAI compat)</option>
+              <option value="ollama">🦙 Ollama Local (Free / Offline)</option>
+              <option value="freeinference">🆓 FreeInference (freeinference.org)</option>
+              <option value="custom">⚙️ Custom OpenAI-Compatible</option>
+            </select>
+          </div>
+          <div>
+            <div style="font:9px var(--font-mono);color:var(--text3);margin-bottom:3px">BASE URL</div>
+            <input id="baseUrlInput" class="field" style="padding:6px 8px;font-size:11px" value="https://api.groq.com/openai/v1" placeholder="https://...">
+          </div>
+        </div>
+
+        <div id="providerHelpHint" style="font:10px var(--font-mono);color:var(--text3);margin-bottom:6px;line-height:1.4">
+          ⚡ Free tier: Get key at <a href="https://console.groq.com/keys" target="_blank" style="color:var(--neon-cyan);text-decoration:underline">console.groq.com</a> (Llama 3.3 70B, ultra-fast)
+        </div>
+
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+            <span style="font:9px var(--font-mono);color:var(--text3)">API KEY / AUTH TOKEN</span>
+            <button id="toggleKeyVisibility" type="button" style="background:none;border:none;color:var(--neon-cyan);font:10px var(--font-mono);cursor:pointer">👁️ Show</button>
+          </div>
+          <div style="display:flex;gap:6px">
+            <input type="password" id="apiKeyInput" class="field" style="padding:8px 10px;font-size:11px;font-family:var(--font-mono);flex:1" placeholder="Enter API key (gsk_..., sk-..., etc.)...">
+            <button id="refreshModelsBtn" class="pill-btn" style="border-color:var(--neon-cyan);color:var(--neon-cyan);font-weight:700" title="Connect and refresh model catalog">🔄 Load</button>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.05);font:10px var(--font-mono);gap:6px;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--text2)">
+            <input type="checkbox" id="saveKeyToEnvCheck" checked>
+            <span>Save to <code style="color:var(--neon-yellow)">.env</code></span>
+          </label>
+          <div style="display:flex;gap:6px">
+            <button id="saveKeyBtn" style="background:rgba(0,255,136,0.1);border:1px solid var(--neon-green);color:var(--neon-green);border-radius:4px;padding:3px 8px;font:700 9px var(--font-mono);cursor:pointer">💾 Save Key</button>
+            <button id="testConnectionBtn" style="background:rgba(0,221,255,0.15);border:1px solid var(--neon-cyan);color:var(--neon-cyan);border-radius:4px;padding:3px 8px;font:700 9px var(--font-mono);cursor:pointer">⚡ Test Real AI</button>
+          </div>
+        </div>
+        <div id="providerMsg" style="display:none;font:10px var(--font-mono);margin-top:6px;padding:4px 8px;border-radius:4px"></div>
+        <div id="connectionTestResult" style="display:none;font:11px var(--font-mono);margin-top:8px;padding:8px 10px;border-radius:6px"></div>
+      </div>
+
+      <div class="label"><span>Mission Briefing / Coding Task</span></div>
+      <textarea id="task" class="field" placeholder="Describe the code to implement, bug to fix, or architectural design..."></textarea>
+
+      <div class="label"><span>Atmospheric Arena Environment</span><span id="envCount">7</span></div>
+      <div class="env-grid" id="envGrid"></div>
+
+      <div class="label"><span>Agent Models (Selected for Council)</span></div>
+      <div class="model-list" id="models"></div>
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <input id="customModelInput" placeholder="Add model (e.g. llama-3.3-70b-versatile, gpt-4o)..." class="field" style="padding:6px 10px;font-size:11px">
+        <button id="addCustomModelBtn" type="button" class="pill-btn" style="border-color:var(--neon-green);color:var(--neon-green);white-space:nowrap;font-weight:700">+ Add</button>
+      </div>
+
+      <div class="label"><span>Escalation Level & Max Iteration Rounds</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <select id="escalationLevel" class="field">
+          <option value="5">Level 5: Multi-Round Iterative Arena</option>
+          <option value="6" selected>Level 6: Full Council + Red Team</option>
+          <option value="3">Level 3: Council Debate</option>
+          <option value="1">Level 1: Fast Execution</option>
+        </select>
+        <select id="maxRounds" class="field">
+          <option value="1">1 Round Debate</option>
+          <option value="2" selected>2 Rounds (Repair Loop)</option>
+          <option value="3">3 Rounds (Convergence)</option>
+        </select>
+      </div>
+
+      <div class="label"><span>Persona Assignment</span><span id="personaCount">16 Roles</span></div>
+      <div id="personaAssign" style="display:flex;flex-direction:column;gap:6px"></div>
+
+      <button id="run" class="run-btn">
+        <span>⚔️ ENTER THE ARENA & RUN COUNCIL</span>
+        <span>↗</span>
+      </button>
+
+      <div id="estimate" style="font:10px var(--font-mono);color:var(--text3);margin-top:8px;text-align:center"></div>
+      <div id="error" style="display:none;color:var(--neon-red);margin-top:8px;font-size:11px"></div>
+    </aside>
+
+    <!-- MAIN ARENA WORKSPACE -->
+    <section class="arena">
+      <!-- Empty State -->
+      <div class="empty-arena glass" id="empty">
+        <div class="arena-sigil"><div class="inner">⚡</div></div>
+        <h2>THE COUNCIL CHAMBER IS IDLE</h2>
+        <p>Select agent models, assign specialized roles (Architect, Hacker, Scientist, Engineer, Red Team, etc.), and launch a coding mission.</p>
+      </div>
+
+      <!-- Loading / Battle Progress -->
+      <div class="loading glass" id="loading">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+          <div style="display:flex;align-items:center;gap:16px">
+            <div style="width:36px;height:36px;border:3px solid var(--glass-border);border-top-color:var(--neon-cyan);border-radius:50%;animation:sigilSpin 1s linear infinite"></div>
+            <div>
+              <h2 id="loadlabel">Initializing Council Arena...</h2>
+              <p style="font:11px var(--font-mono);color:var(--text3)">Executing Blind Proposals, Sandbox Testing, and Adversarial Cross-Examination...</p>
+            </div>
+          </div>
+          <button id="cancelRunBtn" style="background:rgba(255,34,68,0.15);border:1px solid var(--neon-red);color:var(--neon-red);padding:6px 14px;border-radius:6px;font:700 11px var(--font-mono);cursor:pointer;display:flex;align-items:center;gap:6px">⏹️ CANCEL / RESET</button>
+        </div>
+
+        <div class="agent-gallery" id="agentGallery"></div>
+        <div class="live-feed" id="liveFeed"></div>
+      </div>
+
+      <!-- Results Display -->
+      <div class="results" id="results">
+        <div class="ruling" id="ruling"></div>
+        <div class="tab-bar" id="tabs"></div>
+        <div id="pane" class="tab-pane"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ROADMAP MODAL -->
+<div class="modal-backdrop" id="roadmapModal">
+  <div class="modal-dialog">
+    <div class="modal-head">
+      <h2><span>📜</span> THE COUNCIL ARCHITECTURE ROADMAP V2.0 <span style="font:10px var(--font-mono);color:var(--neon-green);border:1px solid rgba(0,255,136,0.3);padding:2px 8px;border-radius:10px">121 SECTIONS · NO MOCK</span></h2>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button id="copyRoadmapBtn" class="pill-btn" style="color:var(--neon-cyan)">📋 Copy Markdown</button>
+        <button class="modal-close" id="closeRoadmapBtn">✕ CLOSE [ESC]</button>
+      </div>
+    </div>
+    <div class="modal-tools">
+      <input type="text" id="roadmapSearch" class="modal-search" placeholder="🔍 Search across 121 architectural sections...">
+      <div class="pills-scroll" id="roadmapPills">
+        <button class="pill-btn" data-jump="sec-0">§0 Core Upgrade</button>
+        <button class="pill-btn" data-jump="sec-2">§2 22 Requirements</button>
+        <button class="pill-btn" data-jump="sec-4">§4 Architecture</button>
+        <button class="pill-btn" data-jump="sec-5">§5 8 Agents</button>
+        <button class="pill-btn" data-jump="sec-15">§15 Execution Lab</button>
+        <button class="pill-btn" data-jump="sec-17">§17 Self-Improvement</button>
+        <button class="pill-btn" data-jump="sec-21">§21 Kill the Winner</button>
+        <button class="pill-btn" data-jump="sec-65">§65 30-Day Plan</button>
+        <button class="pill-btn" data-jump="sec-110">§110 Ultimate Architecture</button>
+        <button class="pill-btn" data-jump="sec-118">§118 Done Criteria</button>
+        <button class="pill-btn" data-jump="sec-121">§121 End State</button>
+      </div>
+    </div>
+    <div class="modal-body" id="roadmapContent">
+      <div style="text-align:center;padding:40px;color:var(--text3)">Loading Council Roadmap...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+let catalog=[], personas=[], environments=[], lastResult=null, selectedEnv='dungeon', liveEvents=[];
+
+function escapeHtml(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function setStatus(text,ok){$('#health').textContent=text;$('#healthDot').classList.toggle('ready',!!ok)}
+
+// Particles
+(function initParticles(){
+  const c=$('#particles');
+  const colors=['#00ff88','#8844ff','#ff2244','#00ddff'];
+  for(let i=0;i<30;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    p.style.cssText=`left:${Math.random()*100}%;animation-delay:${Math.random()*6}s;animation-duration:${4+Math.random()*4}s;background:${colors[i%colors.length]}`;
+    c.appendChild(p);
+  }
+})();
+
+async function loadEnvironments(){
+  try{
+    const r=await fetch('/api/environments');
+    const d=await r.json();
+    environments=d.environments||[];
+    const grid=$('#envGrid');
+    grid.innerHTML=environments.map(e=>`
+      <div class="env-card ${e.id===selectedEnv?'active':''}" data-env="${e.id}">
+        <span class="env-icon">${e.icon}</span>
+        <span class="env-name">${escapeHtml(e.name)}</span>
+        <span class="env-threat">⚠ ${e.threatLevel}/10</span>
+      </div>
+    `).join('');
+    grid.querySelectorAll('.env-card').forEach(c=>c.onclick=()=>{
+      selectedEnv=c.dataset.env;
+      grid.querySelectorAll('.env-card').forEach(x=>x.classList.toggle('active',x.dataset.env===selectedEnv));
+    });
+  }catch(e){}
+}
+
+async function loadPersonas(){
+  try{
+    const r=await fetch('/api/personas');
+    const d=await r.json();
+    personas=d.personas||[];
+    updatePersonaAssign();
+  }catch(e){}
+}
+
+function updatePersonaAssign(){
+  const selected=[...document.querySelectorAll('.modelcheck:checked')].map(x=>x.value);
+  const container=$('#personaAssign');
+  if(!selected.length){container.innerHTML='<div style="font-size:11px;color:var(--text3)">Select models first</div>';return;}
+  container.innerHTML=selected.map((model,i)=>{
+    const defaultPersona=personas[i%personas.length];
+    return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:center">
+      <span style="font:11px var(--font-mono);color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(model)}</span>
+      <select class="field persona-select" data-model="${escapeHtml(model)}" style="padding:4px 6px;font-size:10px">
+        ${personas.map(p=>`<option value="${p.id}" ${p.id===defaultPersona?.id?'selected':''}>${p.avatar} ${p.codename}</option>`).join('')}
+      </select>
+    </div>`;
+  }).join('');
+}
+
+function drawModels(){
+  const target=$('#models');
+  if(!catalog.length){target.innerHTML='<div class="model-row"><span class="mid" style="color:var(--text3)">No models loaded. Click "🔄 Load" or enter custom model.</span></div>';return;}
+  target.innerHTML=catalog.map((m, idx)=>`<label class="model-row ${m.type==='embedding'?'disabled':''}">
+    <input type="checkbox" class="modelcheck" value="${escapeHtml(m.id)}" ${m.type==='embedding'?'disabled':''} ${m.type==='generation' && idx < 3 ? 'checked' : ''}>
+    <span class="mid">${escapeHtml(m.name||m.id)}</span>
+    <span class="mtag">${m.type==='embedding'?'EMB':'GEN'} · CTX ${(m.contextLimit/1000).toFixed(0)}K</span>
+  </label>`).join('');
+  document.querySelectorAll('.modelcheck').forEach(x=>x.addEventListener('change',updatePersonaAssign));
+  updatePersonaAssign();
+}
+
+let serverHasKey = false;
+let currentAbortController = null;
+
+const providerDefaults = {
+  groq: 'https://api.groq.com/openai/v1',
+  openai: 'https://api.openai.com/v1',
+  openrouter: 'https://openrouter.ai/api/v1',
+  deepseek: 'https://api.deepseek.com',
+  gemini: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+  ollama: 'http://localhost:11434/v1',
+  freeinference: 'https://freeinference.org/v1',
+  custom: 'https://api.openai.com/v1'
+};
+
+const providerHints = {
+  groq: '⚡ Free tier: Get key at <a href="https://console.groq.com/keys" target="_blank" style="color:var(--neon-cyan);text-decoration:underline">console.groq.com</a> (Llama 3.3 70B, ultra-fast)',
+  openai: '🧠 Official API: Get key at <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--neon-cyan);text-decoration:underline">platform.openai.com</a>',
+  openrouter: '🌐 Aggregator: Get key at <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--neon-cyan);text-decoration:underline">openrouter.ai</a> (includes free models)',
+  deepseek: '🐋 DeepSeek API: Get key at <a href="https://platform.deepseek.com/api_keys" target="_blank" style="color:var(--neon-cyan);text-decoration:underline">platform.deepseek.com</a>',
+  gemini: '💎 Google Gemini API: Get key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--neon-cyan);text-decoration:underline">aistudio.google.com</a>',
+  ollama: '🦙 100% Free & Local: Run <code>ollama serve</code> on localhost. No API key required.',
+  freeinference: '🆓 FreeInference: Enter your freeinference.org token if you have one.',
+  custom: '⚙️ Any OpenAI-compatible endpoint (vLLM, LMStudio, LocalAI, Azure, etc.)'
+};
+
+function updateKeyBadge() {
+  const prov = $('#providerSelect').value;
+  const key = $('#apiKeyInput').value.trim();
+  const badge = $('#keyStatusBadge');
+  if (prov === 'ollama') {
+    badge.textContent = 'OPTIONAL (LOCAL)';
+    badge.style.background = 'rgba(0,221,255,0.15)';
+    badge.style.color = 'var(--neon-cyan)';
+    badge.style.borderColor = 'rgba(0,221,255,0.3)';
+  } else if (key) {
+    badge.textContent = 'KEY SUPPLIED (UI)';
+    badge.style.background = 'rgba(0,255,136,0.15)';
+    badge.style.color = 'var(--neon-green)';
+    badge.style.borderColor = 'rgba(0,255,136,0.4)';
+  } else if (serverHasKey) {
+    badge.textContent = 'SERVER KEY ACTIVE';
+    badge.style.background = 'rgba(0,255,136,0.15)';
+    badge.style.color = 'var(--neon-green)';
+    badge.style.borderColor = 'rgba(0,255,136,0.4)';
+  } else {
+    badge.textContent = 'KEY REQUIRED';
+    badge.style.background = 'rgba(255,34,68,0.2)';
+    badge.style.color = 'var(--neon-red)';
+    badge.style.borderColor = 'rgba(255,34,68,0.4)';
+  }
+}
+
+$('#providerSelect').onchange = (e) => {
+  const val = e.target.value;
+  $('#baseUrlInput').value = providerDefaults[val] || '';
+  $('#providerHelpHint').innerHTML = providerHints[val] || '';
+  updateKeyBadge();
+  loadModels(true);
+};
+
+$('#toggleKeyVisibility').onclick = () => {
+  const inp = $('#apiKeyInput');
+  const isPass = inp.type === 'password';
+  inp.type = isPass ? 'text' : 'password';
+  $('#toggleKeyVisibility').textContent = isPass ? '🔒 Hide' : '👁️ Show';
+};
+
+$('#apiKeyInput').oninput = updateKeyBadge;
+
+// Custom Model Adder
+function addCustomModel() {
+  const inp = $('#customModelInput');
+  const val = inp.value.trim();
+  if (!val) return;
+  if (!catalog.some(m => m.id === val)) {
+    catalog.unshift({
+      id: val,
+      name: `${val} (Custom)`,
+      type: 'generation',
+      contextLimit: 128000,
+      outputLimit: 16384
+    });
+  }
+  drawModels();
+  const cb = document.querySelector(`.modelcheck[value="${CSS.escape(val)}"]`);
+  if (cb) {
+    cb.checked = true;
+    updatePersonaAssign();
+  }
+  inp.value = '';
+}
+$('#addCustomModelBtn').onclick = addCustomModel;
+$('#customModelInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') addCustomModel(); });
+
+// Real AI API Test Diagnostic Function (Proves Real AI API)
+async function testConnection() {
+  const baseUrl = $('#baseUrlInput').value.trim() || 'https://api.groq.com/openai/v1';
+  const apiKey = $('#apiKeyInput').value.trim();
+  const selectedModel = document.querySelector('.modelcheck:checked')?.value || (baseUrl.includes('groq') ? 'llama-3.3-70b-versatile' : 'gpt-4o-mini');
+  
+  const testBox = $('#connectionTestResult');
+  testBox.style.display = 'block';
+  testBox.style.background = 'rgba(0,221,255,0.06)';
+  testBox.style.border = '1px solid rgba(0,221,255,0.3)';
+  testBox.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;font:11px var(--font-mono);color:var(--neon-cyan)">
+      <div style="width:12px;height:12px;border:2px solid var(--neon-cyan);border-top-color:transparent;border-radius:50%;animation:sigilSpin 0.8s linear infinite"></div>
+      Pinging ${escapeHtml(baseUrl)} with model <b>${escapeHtml(selectedModel)}</b>...
+    </div>
+  `;
+
+  try {
+    const res = await fetch('/api/test-connection', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        provider: { baseUrl, apiKey },
+        model: selectedModel
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      testBox.style.background = 'rgba(0,255,136,0.08)';
+      testBox.style.border = '1px solid rgba(0,255,136,0.4)';
+      testBox.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font:700 11px var(--font-mono);color:var(--neon-green)">✅ REAL AI API CONNECTED & VERIFIED!</span>
+          <span style="font:10px var(--font-mono);color:var(--neon-cyan)">⏱️ ${data.elapsedMs}ms</span>
+        </div>
+        <div style="font:10px var(--font-mono);color:var(--text2);margin-bottom:4px">
+          Model: <span style="color:#fff">${escapeHtml(data.model)}</span> · Tokens: <span style="color:var(--neon-green)">${data.usage?.total_tokens ?? 'OK'}</span>
+        </div>
+        <div style="font:10px var(--font-mono);color:#aaffcc;background:rgba(0,0,0,0.5);padding:6px 8px;border-radius:4px;border:1px solid rgba(0,255,136,0.2)">
+          AI Response: "${escapeHtml(data.text)}"
+        </div>
+      `;
+    } else {
+      testBox.style.background = 'rgba(255,34,68,0.1)';
+      testBox.style.border = '1px solid rgba(255,34,68,0.4)';
+      testBox.innerHTML = `
+        <div style="font:700 11px var(--font-mono);color:var(--neon-red);margin-bottom:4px">❌ AI API CALL FAILED</div>
+        <div style="font:10px var(--font-mono);color:#ff99aa;margin-bottom:4px">${escapeHtml(data.error)}</div>
+        <div style="font:9px var(--font-mono);color:var(--text3)">
+          Tip: Verify your API key and base URL. For Groq, get a free key at <a href="https://console.groq.com/keys" target="_blank" style="color:var(--neon-cyan);text-decoration:underline">console.groq.com</a>.
+        </div>
+      `;
+    }
+  } catch (err) {
+    testBox.style.background = 'rgba(255,34,68,0.1)';
+    testBox.style.border = '1px solid rgba(255,34,68,0.4)';
+    testBox.innerHTML = `<div style="font:700 11px var(--font-mono);color:var(--neon-red)">❌ NETWORK ERROR: ${escapeHtml(err.message)}</div>`;
+  }
+}
+$('#testConnectionBtn').onclick = testConnection;
+
+async function checkServerKey() {
+  try {
+    const res = await fetch('/api/config');
+    const data = await res.json();
+    serverHasKey = data.hasServerKey;
+    if (serverHasKey && data.maskedKey) {
+      $('#apiKeyInput').placeholder = `Server key active (${data.maskedKey})`;
+    }
+    const savedLocalKey = localStorage.getItem('verdict_apiKey');
+    const savedLocalBase = localStorage.getItem('verdict_baseUrl');
+    if (savedLocalKey && !$('#apiKeyInput').value) {
+      $('#apiKeyInput').value = savedLocalKey;
+    }
+    if (savedLocalBase) {
+      $('#baseUrlInput').value = savedLocalBase;
+      for (const [k, v] of Object.entries(providerDefaults)) {
+        if (savedLocalBase.includes(v.replace('/v1', '')) || savedLocalBase === v) {
+          $('#providerSelect').value = k;
+          break;
+        }
+      }
+    }
+    const curProv = $('#providerSelect').value;
+    $('#providerHelpHint').innerHTML = providerHints[curProv] || '';
+    updateKeyBadge();
+  } catch (e) {}
+}
+
+async function saveKey() {
+  const key = $('#apiKeyInput').value.trim();
+  const saveToEnv = $('#saveKeyToEnvCheck').checked;
+  const msg = $('#providerMsg');
+  
+  if (key) {
+    localStorage.setItem('verdict_apiKey', key);
+    localStorage.setItem('verdict_baseUrl', $('#baseUrlInput').value.trim());
+  }
+
+  try {
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey: key, saveToEnv })
+    });
+    const data = await res.json();
+    serverHasKey = data.hasServerKey;
+    updateKeyBadge();
+    msg.style.display = 'block';
+    msg.style.background = 'rgba(0,255,136,0.1)';
+    msg.style.color = 'var(--neon-green)';
+    msg.textContent = saveToEnv ? '✅ API key saved to server .env & session!' : '✅ API key saved in memory for this session!';
+    setTimeout(() => { msg.style.display = 'none'; }, 4000);
+    loadModels(true);
+  } catch (err) {
+    msg.style.display = 'block';
+    msg.style.background = 'rgba(255,34,68,0.1)';
+    msg.style.color = 'var(--neon-red)';
+    msg.textContent = 'Failed to save key: ' + err.message;
+  }
+}
+
+$('#saveKeyBtn').onclick = saveKey;
+$('#refreshModelsBtn').onclick = () => loadModels(true);
+
+async function loadModels(showFeedback = false) {
+  const baseUrl = $('#baseUrlInput').value.trim() || 'https://api.groq.com/openai/v1';
+  const apiKey = $('#apiKeyInput').value.trim();
+  const msg = $('#providerMsg');
+
+  try {
+    const r = await fetch('/api/models', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider: { baseUrl, apiKey } })
+    });
+    const d = await r.json();
+    catalog = d.models || [];
+    drawModels();
+    if (showFeedback) {
+      msg.style.display = 'block';
+      msg.style.background = d.source === 'live' ? 'rgba(0,255,136,0.1)' : 'rgba(0,221,255,0.1)';
+      msg.style.color = d.source === 'live' ? 'var(--neon-green)' : 'var(--neon-cyan)';
+      msg.textContent = d.source === 'live' 
+        ? `✅ Live catalog loaded: ${catalog.length} models from ${baseUrl}` 
+        : `⚡ Provider presets active: ${catalog.length} models for ${d.providerMatched || 'selected provider'}`;
+      setTimeout(() => { msg.style.display = 'none'; }, 4000);
+    }
+  } catch (e) {
+    if (showFeedback) {
+      msg.style.display = 'block';
+      msg.style.background = 'rgba(255,34,68,0.1)';
+      msg.style.color = 'var(--neon-red)';
+      msg.textContent = `Error loading models: ${e.message}`;
+    }
+  }
+}
+
+function liveCard(ev){
+  let title='',body='',cssClass='';
+  if(ev.event==='arena-init'){
+    title=`🏟️ Arena Initialized: ${ev.environment?.name}`;
+    body=`Max Rounds: ${ev.maxRounds} · Threat Level: ${ev.threatLevel || 'Standard'} · Scars Loaded: ${ev.scarsLoaded}`;
+  }
+  else if(ev.event==='arena-event'){
+    if(ev.type==='ai-request'){
+      title = `📡 Real AI API Request [${(ev.stage||'').toUpperCase()}]`;
+      body = ev.description;
+      cssClass = 'ai-request-event';
+    } else if(ev.type==='ai-response'){
+      title = `✅ Real AI Output: ${ev.model} (${ev.elapsedMs}ms · ${ev.tokens} tokens)`;
+      body = ev.description;
+      cssClass = 'ai-response-event';
+    } else if(ev.type==='entrance'){
+      title = `🎭 ${ev.agent} Enters Arena`;
+      body = ev.description;
+    } else if(ev.type==='execution'){
+      title = `🧪 Execution Result`;
+      body = ev.description;
+      cssClass = 'execution-event';
+    } else if(ev.type==='combat'){
+      title = `💥 Cross-Examination Attack`;
+      body = ev.description;
+      cssClass = 'combat-event';
+    } else {
+      title = `🎯 Red Team & Audit Event`;
+      body = ev.description;
+    }
+  }
+  else if(ev.event==='proposal'){ title=`📝 ${ev.role} submitted ${ev.candidateId}`; body=ev.data?.summary||''; }
+  else return '';
+
+  return `<div class="live-item ${cssClass}"><div style="font:700 11px var(--font-mono);color:var(--neon-cyan)">${escapeHtml(title)}</div><p style="font:11px var(--font-body);color:var(--text2);margin-top:4px">${escapeHtml(body)}</p></div>`;
+}
+
+function receiveEvent(ev){
+  liveEvents.push(ev);
+  if(ev.event==='stage') $('#loadlabel').textContent=`${ev.stage.toUpperCase()}: ${ev.label||ev.state}`;
+  if(ev.event==='error') {
+    $('#loadlabel').textContent = '⚠️ Arena Stopped with Error';
+    const feed = $('#liveFeed');
+    feed.insertAdjacentHTML('beforeend', `<div class="live-item" style="border-left:3px solid var(--neon-red);background:rgba(255,34,68,0.12)"><div style="font:700 12px var(--font-mono);color:var(--neon-red)">💥 REAL AI API EXECUTION ERROR</div><p style="font:11px var(--font-body);color:#ff99aa;margin-top:6px">${escapeHtml(ev.error)}</p></div>`);
+    feed.scrollTop = feed.scrollHeight;
+    $('#error').textContent = ev.error;
+    $('#error').style.display = 'block';
+    $('#run').disabled = false;
+    return;
+  }
+  const html=liveCard(ev);
+  if(html){
+    const feed=$('#liveFeed');
+    feed.insertAdjacentHTML('beforeend',html);
+    feed.scrollTop=feed.scrollHeight;
+  }
+}
+
+function showTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+  const p=$('#pane'),d=lastResult;if(!d)return;
+
+  if(name==='ruling'){
+    p.innerHTML=`<div style="padding:16px;background:rgba(0,221,255,0.05);border:1px solid rgba(0,221,255,0.2);border-radius:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 style="color:var(--neon-cyan);font-family:var(--font-display)">Winning Candidate: ${escapeHtml(d.ruling.winningCandidateId)}</h3>
+        <span style="font:10px var(--font-mono);color:var(--neon-green);padding:2px 8px;border-radius:4px;background:rgba(0,255,136,0.15)">Confidence: ${((d.ruling.confidence||0.9)*100).toFixed(0)}%</span>
+      </div>
+      <p style="margin-top:10px;line-height:1.6">${escapeHtml(d.ruling.why)}</p>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="font:11px var(--font-mono);color:var(--neon-purple)">Red Team Verdict: <b>${d.redTeamVerdict?.survived?'SURVIVED':'FATAL FLAW FOUND'}</b><br><span style="color:var(--text3)">${escapeHtml(d.redTeamVerdict?.fatalFlaw||'No fatal flaws detected')}</span></div>
+        <div style="font:11px var(--font-mono);color:var(--neon-green)">Judge Auditor: <b>${d.judgeAudit?.auditPassed?'CONFIRMED':'OVERRIDDEN'}</b><br><span style="color:var(--text3)">${escapeHtml(d.judgeAudit?.contradictionFound||'Execution data aligns with verdict')}</span></div>
+      </div>
+    </div>`;
+  }
+  if(name==='candidates'){
+    p.innerHTML=(d.candidates||[]).map(c=>`
+      <div style="border:1px solid var(--glass-border);padding:14px;border-radius:8px;margin-bottom:10px;background:var(--glass)">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:700 12px var(--font-mono);color:var(--neon-cyan)">${escapeHtml(c.candidateId)} (${escapeHtml(c.role)})</span></div>
+        <p style="margin:6px 0">${escapeHtml(c.summary)}</p>
+        ${c.codeSnippet?`<div class="code-block">${escapeHtml(c.codeSnippet)}</div>`:''}
+        <div style="margin-top:8px;font:10px var(--font-mono);color:var(--text3)">Execution Status: ${d.executionResults[c.candidateId]?.status||'N/A'} · ${d.executionResults[c.candidateId]?.elapsedMs||0}ms</div>
+      </div>
+    `).join('');
+  }
+  if(name==='execution'){
+    p.innerHTML=Object.entries(d.executionResults||{}).map(([id,res])=>`
+      <div style="border:1px solid var(--glass-border);padding:12px;border-radius:8px;margin-bottom:8px">
+        <span style="font:700 11px var(--font-mono);color:var(--neon-cyan)">Candidate ${escapeHtml(id)} Sandbox Execution</span>
+        <div style="font:11px var(--font-mono);margin-top:4px">Status: <span style="color:${res.status==='PASSED'?'var(--neon-green)':'var(--neon-red)'}">${res.status}</span> · Tests Passed: ${res.passCount}/${res.tests?.length||0}</div>
+        ${res.stdout?`<div class="code-block">${escapeHtml(res.stdout)}</div>`:''}
+        ${res.stderr?`<div class="code-block" style="color:var(--neon-red)">${escapeHtml(res.stderr)}</div>`:''}
+      </div>
+    `).join('');
+  }
+  if(name==='attacks'){
+    p.innerHTML=(d.attacks||[]).map(a=>`
+      <div style="border:1px solid var(--glass-border);padding:10px;border-radius:8px;margin-bottom:6px">
+        <span style="font:700 11px var(--font-mono);color:var(--neon-red)">${escapeHtml(a.attacker)} → Target ${escapeHtml(a.targetId)} [${escapeHtml(a.severity)}]</span>
+        <p style="font-size:11px;margin-top:4px">${escapeHtml(a.attackNarrative)}</p>
+      </div>
+    `).join('');
+  }
+  if(name==='traces'){
+    const traces = d.rawApiTraces || [];
+    if (!traces.length) {
+      p.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text3);font-family:var(--font-mono)">No raw API traces recorded for this run.</div>`;
+      return;
+    }
+    const totalTokens = traces.reduce((acc, t) => acc + (t.usage?.total_tokens || 0), 0);
+    p.innerHTML = `
+      <div style="margin-bottom:14px;padding:12px 16px;background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.25);border-radius:8px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font:700 12px var(--font-mono);color:var(--neon-green)">📡 REAL AI API AUDIT LOG (${traces.length} REAL LLM CALLS MADE)</div>
+          <div style="font:11px var(--font-body);color:var(--text2);margin-top:2px">Every prompt sent to the LLM and the exact raw response received from the provider. Zero mock data.</div>
+        </div>
+        <div style="font:11px var(--font-mono);color:var(--neon-cyan)">
+          Total Tokens: <b>${totalTokens}</b>
+        </div>
+      </div>
+      ${traces.map((t, idx) => `
+        <div style="border:1px solid var(--glass-border);border-radius:8px;margin-bottom:12px;background:rgba(0,0,0,0.3);overflow:hidden">
+          <div style="padding:10px 14px;background:rgba(255,255,255,0.03);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font:700 11px var(--font-mono);color:var(--neon-cyan)">#${idx + 1} [${escapeHtml(t.stage.toUpperCase())}]</span>
+              <span style="font:600 11px var(--font-mono);color:var(--text)">${escapeHtml(t.model)}</span>
+              <span style="font:9px var(--font-mono);color:var(--text3);padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.05)">${escapeHtml(t.provider)}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;font:11px var(--font-mono)">
+              <span style="color:var(--neon-yellow)">⏱️ ${t.elapsedMs}ms</span>
+              <span style="color:var(--neon-green)">🎟️ ${t.usage?.total_tokens || 'N/A'} tokens</span>
+            </div>
+          </div>
+          <div style="padding:12px">
+            <details style="margin-bottom:8px">
+              <summary style="font:700 10px var(--font-mono);color:var(--text2);cursor:pointer;margin-bottom:4px">🔍 INSPECT PROMPT SENT TO AI (${escapeHtml(t.promptPreview.length)} chars preview)</summary>
+              <pre class="code-block" style="max-height:160px;overflow:auto;font-size:10px">${escapeHtml(t.promptPreview)}</pre>
+            </details>
+            <div style="font:700 10px var(--font-mono);color:var(--neon-green);margin-bottom:4px">📦 RAW MODEL OUTPUT FROM PROVIDER API:</div>
+            <pre class="code-block" style="max-height:240px;overflow:auto;font-size:11px;color:#aaffcc;white-space:pre-wrap">${escapeHtml(t.responseRaw)}</pre>
+          </div>
+        </div>
+      `).join('')}
+    `;
+  }
+}
+
+function render(d){
+  lastResult=d;
+  $('#ruling').innerHTML=`
+    <div style="font:10px var(--font-mono);color:var(--neon-cyan)">RUN ID: ${d.runId} · COMPLETED IN ${(d.elapsedMs/1000).toFixed(1)}s · ${d.roundsCompleted} ROUNDS</div>
+    <h2>WINNER: ${escapeHtml(d.ruling.winningCandidateId)}</h2>
+    <p>${escapeHtml(d.ruling.why)}</p>
+  `;
+
+  const tabDefs=[
+    ['ruling','🏆 Ruling & Audit'],
+    ['candidates',`📝 Candidates (${d.candidates?.length||0})`],
+    ['execution','🧪 Execution Lab'],
+    ['attacks',`⚔️ Attacks (${d.attacks?.length||0})`],
+    ['traces',`📡 Real AI Traces (${d.rawApiTraces?.length||0})`]
+  ];
+  $('#tabs').innerHTML=tabDefs.map(([id,label])=>`<button class="tab ${id==='ruling'?'active':''}" data-tab="${id}">${label}</button>`).join('');
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>showTab(t.dataset.tab));
+  showTab('ruling');
+}
+
+$('#cancelRunBtn').onclick = () => {
+  if (currentAbortController) {
+    currentAbortController.abort();
+  }
+  $('#loading').style.display = 'none';
+  $('#empty').style.display = 'flex';
+  $('#run').disabled = false;
+};
+
+async function run(){
+  const selected=[...document.querySelectorAll('.modelcheck:checked')].map(x=>x.value);
+  const task=$('#task').value.trim();
+  if(task.length<20)return alert('Enter a task of at least 20 characters.');
+  if(!selected.length)return alert('Select at least one model.');
+
+  const baseUrl = $('#baseUrlInput').value.trim() || 'https://api.groq.com/openai/v1';
+  const apiKey = $('#apiKeyInput').value.trim();
+  const selectedProvider = $('#providerSelect').value;
+
+  if (selectedProvider !== 'ollama' && !apiKey && !serverHasKey) {
+    $('#providerMsg').style.display = 'block';
+    $('#providerMsg').style.background = 'rgba(255,34,68,0.15)';
+    $('#providerMsg').style.color = 'var(--neon-red)';
+    $('#providerMsg').textContent = `⚠️ API key required for ${selectedProvider.toUpperCase()}. Please enter your key in the Provider panel.`;
+    $('#apiKeyInput').focus();
+    return alert(`An API key is required to make genuine AI API calls with ${selectedProvider.toUpperCase()}.\n\nPlease paste your API key in the 'Provider & Real AI API' box on the left, then click 'Save Key' or 'Test Real AI'.\n\n(Tip: For Groq, you can get a 100% free API key at console.groq.com)`);
+  }
+
+  const personaAssignments={};
+  document.querySelectorAll('.persona-select').forEach(sel=>{ personaAssignments[sel.dataset.model]=sel.value; });
+
+  $('#empty').style.display='none';
+  $('#loading').style.display='flex';
+  $('#results').style.display='none';
+  $('#error').style.display='none';
+  $('#run').disabled=true;
+  liveEvents=[];
+  $('#liveFeed').innerHTML='';
+  $('#loadlabel').textContent='Initializing Council Arena...';
+
+  currentAbortController = new AbortController();
+
+  const req={
+    task,
+    provider:{ baseUrl, apiKey },
+    models:selected,
+    judge:selected[0],
+    environment:selectedEnv,
+    personaAssignments,
+    escalationLevel:Number($('#escalationLevel').value),
+    maxRounds:Number($('#maxRounds').value)
+  };
+
+  try{
+    const response=await fetch('/api/verdict',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(req),
+      signal: currentAbortController.signal
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error || `Server returned HTTP ${response.status}`);
+    }
+
+    const reader=response.body.getReader(),decoder=new TextDecoder();
+    let buffer='',finalResult=null;
+    let hadError = false;
+
+    while(true){
+      const{value,done}=await reader.read();
+      buffer+=decoder.decode(value||new Uint8Array(),{stream:!done});
+      let nl;
+      while((nl=buffer.indexOf('\n'))>=0){
+        const line=buffer.slice(0,nl).trim();
+        buffer=buffer.slice(nl+1);
+        if(!line)continue;
+        try {
+          const ev=JSON.parse(line);
+          if (ev.event === 'error') hadError = true;
+          receiveEvent(ev);
+          if(ev.event==='result')finalResult=ev.data;
+        } catch(err) {
+          console.warn('Malformed stream line:', line);
+        }
+      }
+      if(done)break;
+    }
+
+    if(finalResult){
+      render(finalResult);
+      $('#loading').style.display='none';
+      $('#results').style.display='block';
+    } else if (hadError) {
+      $('#loadlabel').textContent = '⚠️ Arena Stopped (Errors in Stream)';
+    } else {
+      $('#loading').style.display='none';
+      $('#empty').style.display='flex';
+    }
+  }catch(e){
+    if (e.name === 'AbortError') {
+      $('#loadlabel').textContent = '⏹️ Arena Execution Cancelled';
+      setTimeout(() => { $('#loading').style.display='none'; $('#empty').style.display='flex'; }, 600);
+    } else {
+      alert('Error running Council: '+e.message);
+      $('#error').textContent = e.message;
+      $('#error').style.display = 'block';
+      $('#loadlabel').textContent = '⚠️ Arena Execution Failed';
+    }
+  }finally{
+    $('#run').disabled=false;
+    currentAbortController = null;
+  }
+}
+
+$('#run').onclick=run;
+
+fetch('/api/status').then(r=>r.json()).then(d=>{
+  setStatus('COUNCIL READY',true);
+  checkServerKey();
+  loadModels();
+  loadEnvironments();
+  loadPersonas();
+}).catch(()=>setStatus('OFFLINE',false));
+
+// ROADMAP V2.0 CONTROLLER (121 SECTIONS)
+let rawRoadmapMarkdown = '';
+
+function renderRoadmapMarkdown(md) {
+  let html = escapeHtml(md);
+  // Headers with IDs for jumping
+  html = html.replace(/^# ([0-9]+)\.\s*(.*?)$/gm, (m, num, title) => {
+    return `<h1 id="sec-${num}"><span style="color:var(--neon-green)"># ${num}.</span> ${title}</h1>`;
+  });
+  html = html.replace(/^# (.*?)$/gm, '<h1 style="color:var(--neon-cyan);border-bottom:2px solid rgba(0,221,255,0.2);padding-bottom:10px;margin-top:30px">$1</h1>');
+  html = html.replace(/^## (.*?)$/gm, '<h2 style="color:var(--neon-green);margin-top:20px;font-size:15px">$1</h2>');
+  html = html.replace(/^### (.*?)$/gm, '<h3 style="color:var(--neon-yellow);margin-top:16px;font-size:13px">$1</h3>');
+  html = html.replace(/```(?:text|json|python|bash)?\r?\n([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong style="color:var(--neon-cyan)">$1</strong>');
+  html = html.replace(/^>\s*(.*?)$/gm, '<blockquote>$1</blockquote>');
+  html = html.replace(/^---$/gm, '<hr>');
+  html = html.replace(/^[*-]\s+(.*?)$/gm, '<li style="margin-left:20px">$1</li>');
+  html = html.replace(/\r?\n\r?\n/g, '<p style="margin:10px 0"></p>');
+  return html;
+}
+
+async function openRoadmap() {
+  $('#roadmapModal').classList.add('open');
+  if (!rawRoadmapMarkdown) {
+    try {
+      const res = await fetch('/api/roadmap');
+      const data = await res.json();
+      rawRoadmapMarkdown = data.content || '';
+      $('#roadmapContent').innerHTML = renderRoadmapMarkdown(rawRoadmapMarkdown);
+    } catch (err) {
+      $('#roadmapContent').innerHTML = `<div style="color:var(--neon-red);padding:20px">Failed to load roadmap: ${err.message}</div>`;
+    }
+  }
+}
+
+function closeRoadmap() {
+  $('#roadmapModal').classList.remove('open');
+}
+
+$('#openRoadmapHeaderBtn').onclick = openRoadmap;
+$('#roadmapBadgeBtn').onclick = openRoadmap;
+$('#closeRoadmapBtn').onclick = closeRoadmap;
+$('#roadmapModal').onclick = (e) => { if (e.target === $('#roadmapModal')) closeRoadmap(); };
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeRoadmap(); });
+
+$('#copyRoadmapBtn').onclick = () => {
+  if (rawRoadmapMarkdown) {
+    navigator.clipboard.writeText(rawRoadmapMarkdown).then(() => {
+      $('#copyRoadmapBtn').textContent = '✅ Copied!';
+      setTimeout(() => { $('#copyRoadmapBtn').textContent = '📋 Copy Markdown'; }, 2000);
+    });
+  }
+};
+
+$('#roadmapPills').onclick = (e) => {
+  const jump = e.target.dataset?.jump;
+  if (jump) {
+    const el = document.getElementById(jump);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+};
+
+$('#roadmapSearch').oninput = (e) => {
+  const query = e.target.value.toLowerCase().trim();
+  if (!query) {
+    $('#roadmapContent').innerHTML = renderRoadmapMarkdown(rawRoadmapMarkdown);
+    return;
+  }
+  const sections = rawRoadmapMarkdown.split(/(?=\n# )/);
+  const matched = sections.filter(sec => sec.toLowerCase().includes(query));
+  if (matched.length) {
+    $('#roadmapContent').innerHTML = `<div style="color:var(--neon-cyan);margin-bottom:16px;font:700 12px var(--font-mono)">Matched ${matched.length} of ${sections.length} sections for "${escapeHtml(query)}"</div>` + renderRoadmapMarkdown(matched.join('\n\n---\n\n'));
+  } else {
+    $('#roadmapContent').innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">No sections matched "${escapeHtml(query)}"</div>`;
+  }
+};
+</script>
+</body>
+</html>

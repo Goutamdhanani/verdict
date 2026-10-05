@@ -1,0 +1,42 @@
+{
+  "architect": {
+    "runs": 1,
+    "wins": 0,
+    "totalPredictedConf": 0.8,
+    "totalSuccess": 0,
+    "calibrationScore": 0.2,
+    "reputationScore": 1500
+  },
+  "hacker": {
+    "runs": 1,
+    "wins": 0,
+    "totalPredictedConf": 0.85,
+    "totalSuccess": 0,
+    "calibrationScore": 0.15,
+    "reputationScore": 1495
+  },
+  "scientist": {
+    "runs": 1,
+    "wins": 0,
+    "totalPredictedConf": 0.8,
+    "totalSuccess": 0,
+    "calibrationScore": 0.2,
+    "reputationScore": 1500
+  },
+  "engineer": {
+    "runs": 1,
+    "wins": 0,
+    "totalPredictedConf": 0.85,
+    "totalSuccess": 0,
+    "calibrationScore": 0.15,
+    "reputationScore": 1495
+  },
+  "oracle": {
+    "runs": 1,
+    "wins": 0,
+    "totalPredictedConf": 0.85,
+    "totalSuccess": 0,
+    "calibrationScore": 0.15,
+    "reputationScore": 1495
+  }
+}
